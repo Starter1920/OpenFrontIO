@@ -202,6 +202,7 @@ export interface GameConfigSettingsData {
     selected: Difficulty;
     disabled: boolean;
     ellipsis?: boolean;
+    insane?: boolean;
   };
   gameMode: {
     selected: GameMode;
@@ -283,6 +284,13 @@ export class GameConfigSettings extends LitElement {
     this.emit("difficulty-selected", {
       difficulty: Difficulty.Impossible,
       ellipsis: true,
+    });
+  };
+
+  private handleInsaneDifficultySelect = () => {
+    this.emit("difficulty-selected", {
+      difficulty: Difficulty.Impossible,
+      insane: true,
     });
   };
 
@@ -470,11 +478,12 @@ export class GameConfigSettings extends LitElement {
           "bg-green-500/20",
           "difficulty.difficulty",
           html`
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div class="grid grid-cols-2 md:grid-cols-6 gap-4">
               ${DIFFICULTY_OPTIONS.map(([key, value]) => {
                 const isSelected =
                   settings.difficulty.selected === value &&
-                  settings.difficulty.ellipsis !== true;
+                  settings.difficulty.ellipsis !== true &&
+                  settings.difficulty.insane !== true;
                 const isDisabled = settings.difficulty.disabled;
                 return html`
                   <div class="group/difficulty-card relative">
@@ -537,6 +546,35 @@ export class GameConfigSettings extends LitElement {
                 </button>
                 <difficulty-info
                   difficultyKey="ellipsis"
+                  .disabled=${settings.difficulty.disabled}
+                ></difficulty-info>
+              </div>
+              <div class="group/difficulty-card relative">
+                <button
+                  ?disabled=${settings.difficulty.disabled}
+                  @click=${() =>
+                    !settings.difficulty.disabled &&
+                    this.handleInsaneDifficultySelect()}
+                  class="${
+                    settings.difficulty.disabled
+                      ? `${DISABLED_CARD} flex flex-col items-center p-4 gap-3 h-full`
+                      : cardClass(
+                          settings.difficulty.insane === true,
+                          "flex flex-col items-center p-4 gap-3 h-full",
+                        )
+                  }"
+                >
+                  <span
+                    class="flex h-10 items-center text-4xl font-black tracking-widest text-white"
+                  >
+                    ∞
+                  </span>
+                  <span class="${CARD_LABEL_CLASS} text-center mt-1 text-white">
+                    ${translateText("difficulty.insane")}
+                  </span>
+                </button>
+                <difficulty-info
+                  difficultyKey="insane"
                   .disabled=${settings.difficulty.disabled}
                 ></difficulty-info>
               </div>

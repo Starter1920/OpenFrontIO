@@ -575,6 +575,7 @@ export class SinglePlayerModal extends BaseModal {
                 selected: this.selectedDifficulty,
                 disabled: this.nations === 0,
                 ellipsis: this.ellipsisBots,
+                insane: this.insaneBots,
               },
               gameMode: {
                 selected: this.gameMode,
@@ -603,10 +604,6 @@ export class SinglePlayerModal extends BaseModal {
                   {
                     labelKey: "game_settings.random_spawn",
                     checked: this.randomSpawn,
-                  },
-                  {
-                    labelKey: "game_settings.insane_bots",
-                    checked: this.insaneBots,
                   },
                   {
                     labelKey: "game_settings.infinite_gold",
@@ -994,18 +991,27 @@ export class SinglePlayerModal extends BaseModal {
 
   private handleDifficultySelection(value: Difficulty) {
     this.selectedDifficulty = value;
-    // Picking a regular difficulty card clears the "..." mode.
+    // Picking a regular difficulty card clears the special modes.
     this.ellipsisBots = false;
+    this.insaneBots = false;
   }
 
   private handleConfigDifficultySelected = (e: Event) => {
     const customEvent = e as CustomEvent<{
       difficulty: Difficulty;
       ellipsis?: boolean;
+      insane?: boolean;
     }>;
     if (customEvent.detail.ellipsis === true) {
       this.selectedDifficulty = customEvent.detail.difficulty;
       this.ellipsisBots = true;
+      this.insaneBots = false;
+      return;
+    }
+    if (customEvent.detail.insane === true) {
+      this.selectedDifficulty = customEvent.detail.difficulty;
+      this.insaneBots = true;
+      this.ellipsisBots = false;
       return;
     }
     this.handleDifficultySelection(customEvent.detail.difficulty);
@@ -1049,9 +1055,6 @@ export class SinglePlayerModal extends BaseModal {
         break;
       case "game_settings.random_spawn":
         this.randomSpawn = checked;
-        break;
-      case "game_settings.insane_bots":
-        this.insaneBots = checked;
         break;
       case "game_settings.infinite_gold":
         this.infiniteGold = checked;

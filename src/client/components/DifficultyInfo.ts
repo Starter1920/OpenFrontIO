@@ -34,10 +34,16 @@ export class DifficultyInfo extends LitElement {
     if (this.disabled) return nothing;
     const difficulty = this.difficultyKey as Difficulty;
     const isEllipsis = this.difficultyKey === "ellipsis";
-    const percent = isEllipsis ? 1250 : DIFFICULTY_TROOP_PERCENT[difficulty];
+    const isInsane = this.difficultyKey === "insane";
+    const percent = isEllipsis
+      ? 1250
+      : isInsane
+        ? 375
+        : DIFFICULTY_TROOP_PERCENT[difficulty];
     if (percent === undefined) return nothing;
 
-    const key = isEllipsis ? "impossible" : this.difficultyKey.toLowerCase();
+    const key =
+      isEllipsis || isInsane ? "impossible" : this.difficultyKey.toLowerCase();
     const troops =
       percent === 100
         ? translateText("difficulty.info_troops_same")

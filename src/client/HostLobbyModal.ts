@@ -715,6 +715,7 @@ export class HostLobbyModal extends BaseModal {
                 selected: this.selectedDifficulty,
                 disabled: this.nations === 0,
                 ellipsis: this.ellipsisBots,
+                insane: this.insaneBots,
               },
               gameMode: {
                 selected: this.gameMode,
@@ -759,10 +760,6 @@ export class HostLobbyModal extends BaseModal {
                   {
                     labelKey: "game_settings.infinite_troops",
                     checked: this.infiniteTroops,
-                  },
-                  {
-                    labelKey: "game_settings.insane_bots",
-                    checked: this.insaneBots,
                   },
                   {
                     labelKey: "game_settings.compact_map",
@@ -1189,8 +1186,12 @@ export class HostLobbyModal extends BaseModal {
     const customEvent = e as CustomEvent<{
       difficulty: Difficulty;
       ellipsis?: boolean;
+      insane?: boolean;
     }>;
     this.ellipsisBots = customEvent.detail.ellipsis === true;
+    this.insaneBots =
+      customEvent.detail.insane === true &&
+      customEvent.detail.ellipsis !== true;
     void this.handleDifficultySelection(customEvent.detail.difficulty);
   };
 
@@ -1235,10 +1236,6 @@ export class HostLobbyModal extends BaseModal {
         break;
       case "game_settings.infinite_troops":
         this.handleInfiniteTroopsChange(checked);
-        break;
-      case "game_settings.insane_bots":
-        this.insaneBots = checked;
-        void this.putGameConfig();
         break;
       case "game_settings.compact_map":
         this.handleCompactMapChange(checked);

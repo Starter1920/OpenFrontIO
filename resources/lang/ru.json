@@ -679,6 +679,7 @@
     "ellipsis": "...",
     "hard": "Сложно",
     "impossible": "Невозможно",
+    "insane": "Бесконечная",
     "medium": "Средне"
   },
   "discord_user_header": {
@@ -860,7 +861,6 @@
     "gold_multiplier": "Множитель золота",
     "infinite_gold": "Неограниченное золото",
     "infinite_troops": "Неограниченные войска",
-    "insane_bots": "Бесконечная сложность (нации ×3)",
     "instant_build": "Мгновенная стройка",
     "max_timer": "Продолжительность игры (минуты)",
     "mins_placeholder": "Минуты",
