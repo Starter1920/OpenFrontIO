@@ -246,9 +246,10 @@ export class ClientEnv {
   }
   static jwtIssuer(): string {
     const audience = ClientEnv.jwtAudience();
-    return audience === "localhost"
-      ? "http://localhost:8787"
-      : `https://api.${audience}`;
+    if (audience !== "localhost") return `https://api.${audience}`;
+    // Same reasoning as ApiBase.getApiBase(): friends joining over LAN/VPN
+    // load this page from the host machine, so target its hostname.
+    return `http://${window.location.hostname}:8787`;
   }
   static async jwkPublicKey(): Promise<JWK> {
     if (ClientEnv.publicKey) return ClientEnv.publicKey;

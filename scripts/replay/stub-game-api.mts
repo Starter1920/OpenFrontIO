@@ -16,7 +16,7 @@ import path from "path";
 
 const dir: string = process.argv[2] ?? "records";
 const port = Number(process.argv[3] ?? 8787);
-const host = process.argv[4] ?? "127.0.0.1";
+const host = process.argv[4] ?? "0.0.0.0";
 const clientOrigin =
   process.env.CLIENT_ORIGIN ??
   `http://localhost:${process.env.CLIENT_PORT ?? 9000}`;
@@ -26,8 +26,13 @@ if (!fs.existsSync(dir)) {
 
 http
   .createServer((req, res) => {
-    // The dev client fetches records from another origin (localhost:9000).
-    res.setHeader("Access-Control-Allow-Origin", clientOrigin);
+    // The dev client fetches records from another origin (localhost:9000 or,
+    // when a friend joins over LAN/VPN, the host's LAN/VPN address). Echo the
+    // requesting origin: this is a dev-only stub, not a prod service.
+    res.setHeader(
+      "Access-Control-Allow-Origin",
+      req.headers.origin ?? clientOrigin,
+    );
     // The client-side replay's fetch (JoinLobbyModal) sends Content-Type,
     // so the browser asks first. Without this answer it blocks the fetch.
     if (req.method === "OPTIONS") {

@@ -12,7 +12,11 @@ export function getApiBase() {
     if (apiDomain) {
       return `https://${apiDomain}`;
     }
-    return localStorage.getItem("apiHost") ?? "http://localhost:8787";
+    const override = localStorage.getItem("apiHost");
+    if (override) return override;
+    // No hardcoded loopback: a friend on LAN/VPN opens this page from their
+    // own machine, where "localhost" would point at them instead of the host.
+    return `http://${window.location.hostname}:8787`;
   }
 
   return `https://api.${domainname}`;
