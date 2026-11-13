@@ -95,6 +95,8 @@ export class HostLobbyModal extends BaseModal {
   @state() private spawnImmunity: boolean = false;
   @state() private spawnImmunityDurationMinutes: number | undefined = undefined;
   @state() private infiniteGold: boolean = false;
+
+  @state() private insaneBots: boolean = false;
   @state() private donateGold: boolean = false;
   @state() private infiniteTroops: boolean = false;
   @state() private donateTroops: boolean = false;
@@ -756,6 +758,10 @@ export class HostLobbyModal extends BaseModal {
                     checked: this.infiniteTroops,
                   },
                   {
+                    labelKey: "game_settings.insane_bots",
+                    checked: this.insaneBots,
+                  },
+                  {
                     labelKey: "game_settings.compact_map",
                     checked: this.compactMap,
                   },
@@ -1091,6 +1097,7 @@ export class HostLobbyModal extends BaseModal {
     this.gameMode = GameMode.FFA;
     this.teamCount = 2;
     this.bots = 400;
+    this.insaneBots = false;
     this.spawnImmunity = false;
     this.spawnImmunityDurationMinutes = undefined;
     this.infiniteGold = false;
@@ -1220,6 +1227,10 @@ export class HostLobbyModal extends BaseModal {
         break;
       case "game_settings.infinite_troops":
         this.handleInfiniteTroopsChange(checked);
+        break;
+      case "game_settings.insane_bots":
+        this.insaneBots = checked;
+        void this.putGameConfig();
         break;
       case "game_settings.compact_map":
         this.handleCompactMapChange(checked);
@@ -1749,6 +1760,7 @@ export class HostLobbyModal extends BaseModal {
       gameMode: this.gameMode,
       teamCount: this.teamCount,
       bots: this.bots,
+      insaneBots: this.insaneBots,
       nations: sliderToNationsConfig(this.nations, this.defaultNationCount),
       infiniteGold: this.infiniteGold,
       donateGold: this.donateGold,
@@ -1796,6 +1808,7 @@ export class HostLobbyModal extends BaseModal {
     this.gameMode = config.gameMode;
     this.teamCount = config.teamCount;
     this.bots = config.bots;
+    this.insaneBots = config.insaneBots ?? false;
     const isTeam = config.gameMode === GameMode.Team;
     this.infiniteGold = config.infiniteGold ?? false;
     this.donateGold = config.donateGold ?? isTeam;
@@ -1937,6 +1950,7 @@ export class HostLobbyModal extends BaseModal {
               : GameMapSize.Normal,
             difficulty: this.selectedDifficulty,
             bots: this.bots,
+            insaneBots: this.insaneBots,
             infiniteGold: this.infiniteGold,
             donateGold: this.donateGold,
             infiniteTroops: this.infiniteTroops,

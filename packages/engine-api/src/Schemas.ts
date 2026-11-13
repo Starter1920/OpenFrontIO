@@ -294,6 +294,7 @@ export const GameConfigSchema = z.object({
   infiniteTroops: z.boolean(),
   instantBuild: z.boolean(),
   disableNavMesh: z.boolean().optional(),
+  insaneBots: z.boolean().optional(),
   disableAlliances: z.boolean().nullable().optional(),
   disableClanTags: z.boolean().optional(),
   // Opt-in live game stats reporting for the admin bot. Off by default and has

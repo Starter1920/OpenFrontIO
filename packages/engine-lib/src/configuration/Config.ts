@@ -341,6 +341,15 @@ export class Config {
     return this.troopCap(player, false);
   }
 
+  insaneBots(): boolean {
+    return this._gameConfig.insaneBots ?? false;
+  }
+
+  /** Insane bots (x3 strength) applies to AI players only. */
+  botStrengthMultiplier(): number {
+    return this.insaneBots() ? 3 : 1;
+  }
+
   private troopCap(player: PlayerLike, withCities: boolean): number {
     const cityTroops = withCities
       ? player
@@ -361,25 +370,31 @@ export class Config {
     }
 
     if (player.type() === PlayerType.Bot) {
-      return maxTroops / 3;
+      return (maxTroops / 3) * this.botStrengthMultiplier();
     }
 
     if (player.type() === PlayerType.Human) {
       return maxTroops;
     }
 
+    let nationMultiplier: number;
     switch (this._gameConfig.difficulty) {
       case Difficulty.Easy:
-        return maxTroops * 0.5;
+        nationMultiplier = 0.5;
+        break;
       case Difficulty.Medium:
-        return maxTroops * 0.75;
+        nationMultiplier = 0.75;
+        break;
       case Difficulty.Hard:
-        return maxTroops * 1; // Like humans
+        nationMultiplier = 1; // Like humans
+        break;
       case Difficulty.Impossible:
-        return maxTroops * 1.25;
+        nationMultiplier = 1.25;
+        break;
       default:
         assertNever(this._gameConfig.difficulty);
     }
+    return nationMultiplier * maxTroops * this.botStrengthMultiplier();
   }
 
   troopIncreaseRate(player: PlayerLike): number {
@@ -411,6 +426,13 @@ export class Config {
         default:
           assertNever(this._gameConfig.difficulty);
       }
+    }
+
+    if (
+      this.insaneBots() &&
+      (player.type() === PlayerType.Bot || player.type() === PlayerType.Nation)
+    ) {
+      toAdd *= 3;
     }
 
     return Math.min(player.troops() + toAdd, max) - player.troops();

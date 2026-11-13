@@ -650,21 +650,27 @@ export class EngineConfig extends Config {
 
   startManpower(playerInfo: PlayerInfo): number {
     if (playerInfo.playerType === PlayerType.Bot) {
-      return 10_000;
+      return 10_000 * this.botStrengthMultiplier();
     }
     if (playerInfo.playerType === PlayerType.Nation) {
+      let nationManpower: number;
       switch (this._gameConfig.difficulty) {
         case Difficulty.Easy:
-          return 12_500;
+          nationManpower = 12_500;
+          break;
         case Difficulty.Medium:
-          return 18_750;
+          nationManpower = 18_750;
+          break;
         case Difficulty.Hard:
-          return 25_000; // Like humans
+          nationManpower = 25_000; // Like humans
+          break;
         case Difficulty.Impossible:
-          return 31_250;
+          nationManpower = 31_250;
+          break;
         default:
           assertNever(this._gameConfig.difficulty);
       }
+      return nationManpower * this.botStrengthMultiplier();
     }
     // The onboarding tutorial's player starts about half full, where troops
     // grow fastest, so the first attacks take more land.
@@ -677,6 +683,8 @@ export class EngineConfig extends Config {
     let baseRate: bigint;
     if (player.type() === PlayerType.Bot) {
       baseRate = 50n;
+    } else if (player.type() === PlayerType.Nation) {
+      baseRate = 100n * BigInt(this.botStrengthMultiplier());
     } else {
       baseRate = 100n;
     }

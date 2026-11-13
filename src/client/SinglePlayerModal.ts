@@ -132,6 +132,7 @@ const DEFAULT_OPTIONS = {
   selectedMap: GameMapType.World,
   selectedDifficulty: Difficulty.Easy,
   bots: 400,
+  insaneBots: false,
   infiniteGold: false,
   infiniteTroops: false,
   compactMap: false,
@@ -208,6 +209,7 @@ export class SinglePlayerModal extends BaseModal {
   @state() private nations: number = 0;
   @state() private defaultNationCount: number = 0;
   @state() private bots: number = DEFAULT_OPTIONS.bots;
+  @state() private insaneBots: boolean = DEFAULT_OPTIONS.insaneBots;
   @state() private infiniteGold: boolean = DEFAULT_OPTIONS.infiniteGold;
   @state() private infiniteTroops: boolean = DEFAULT_OPTIONS.infiniteTroops;
   @state() private compactMap: boolean = DEFAULT_OPTIONS.compactMap;
@@ -600,6 +602,10 @@ export class SinglePlayerModal extends BaseModal {
                     checked: this.randomSpawn,
                   },
                   {
+                    labelKey: "game_settings.insane_bots",
+                    checked: this.insaneBots,
+                  },
+                  {
                     labelKey: "game_settings.infinite_gold",
                     checked: this.infiniteGold,
                   },
@@ -677,6 +683,7 @@ export class SinglePlayerModal extends BaseModal {
     return (
       this.nations !== this.defaultNationCount ||
       this.bots !== DEFAULT_OPTIONS.bots ||
+      this.insaneBots !== DEFAULT_OPTIONS.insaneBots ||
       this.infiniteGold !== DEFAULT_OPTIONS.infiniteGold ||
       this.infiniteTroops !== DEFAULT_OPTIONS.infiniteTroops ||
       this.compactMap !== DEFAULT_OPTIONS.compactMap ||
@@ -804,6 +811,7 @@ export class SinglePlayerModal extends BaseModal {
     this.bots = DEFAULT_OPTIONS.bots;
     this.nations = 0;
     this.defaultNationCount = 0;
+    this.insaneBots = DEFAULT_OPTIONS.insaneBots;
     this.infiniteGold = DEFAULT_OPTIONS.infiniteGold;
     this.infiniteTroops = DEFAULT_OPTIONS.infiniteTroops;
     this.compactMap = DEFAULT_OPTIONS.compactMap;
@@ -851,6 +859,7 @@ export class SinglePlayerModal extends BaseModal {
       gameMode: this.gameMode,
       teamCount: this.teamCount,
       bots: this.bots,
+      insaneBots: this.insaneBots,
       nations: sliderToNationsConfig(this.nations, this.defaultNationCount),
       infiniteGold: this.infiniteGold,
       infiniteTroops: this.infiniteTroops,
@@ -881,6 +890,7 @@ export class SinglePlayerModal extends BaseModal {
     this.gameMode = config.gameMode;
     this.teamCount = config.teamCount;
     this.bots = config.bots;
+    this.insaneBots = config.insaneBots ?? false;
     this.infiniteGold = config.infiniteGold ?? false;
     this.infiniteTroops = config.infiniteTroops ?? false;
     this.instantBuild = config.instantBuild ?? false;
@@ -1022,6 +1032,9 @@ export class SinglePlayerModal extends BaseModal {
         break;
       case "game_settings.random_spawn":
         this.randomSpawn = checked;
+        break;
+      case "game_settings.insane_bots":
+        this.insaneBots = checked;
         break;
       case "game_settings.infinite_gold":
         this.infiniteGold = checked;
@@ -1341,6 +1354,7 @@ export class SinglePlayerModal extends BaseModal {
             difficulty: this.selectedDifficulty,
             maxTimerValue: finalMaxTimerValue,
             bots: this.bots,
+            insaneBots: this.insaneBots,
             infiniteGold: this.infiniteGold,
             donateGold: this.gameMode === GameMode.Team,
             donateTroops: this.gameMode === GameMode.Team,
