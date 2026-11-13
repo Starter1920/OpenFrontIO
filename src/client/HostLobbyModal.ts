@@ -97,6 +97,8 @@ export class HostLobbyModal extends BaseModal {
   @state() private infiniteGold: boolean = false;
 
   @state() private insaneBots: boolean = false;
+
+  @state() private ellipsisBots: boolean = false;
   @state() private donateGold: boolean = false;
   @state() private infiniteTroops: boolean = false;
   @state() private donateTroops: boolean = false;
@@ -712,6 +714,7 @@ export class HostLobbyModal extends BaseModal {
               difficulty: {
                 selected: this.selectedDifficulty,
                 disabled: this.nations === 0,
+                ellipsis: this.ellipsisBots,
               },
               gameMode: {
                 selected: this.gameMode,
@@ -1098,6 +1101,7 @@ export class HostLobbyModal extends BaseModal {
     this.teamCount = 2;
     this.bots = 400;
     this.insaneBots = false;
+    this.ellipsisBots = false;
     this.spawnImmunity = false;
     this.spawnImmunityDurationMinutes = undefined;
     this.infiniteGold = false;
@@ -1182,7 +1186,11 @@ export class HostLobbyModal extends BaseModal {
   }
 
   private handleConfigDifficultySelected = (e: Event) => {
-    const customEvent = e as CustomEvent<{ difficulty: Difficulty }>;
+    const customEvent = e as CustomEvent<{
+      difficulty: Difficulty;
+      ellipsis?: boolean;
+    }>;
+    this.ellipsisBots = customEvent.detail.ellipsis === true;
     void this.handleDifficultySelection(customEvent.detail.difficulty);
   };
 
@@ -1761,6 +1769,7 @@ export class HostLobbyModal extends BaseModal {
       teamCount: this.teamCount,
       bots: this.bots,
       insaneBots: this.insaneBots,
+      ellipsisBots: this.ellipsisBots,
       nations: sliderToNationsConfig(this.nations, this.defaultNationCount),
       infiniteGold: this.infiniteGold,
       donateGold: this.donateGold,
@@ -1809,6 +1818,7 @@ export class HostLobbyModal extends BaseModal {
     this.teamCount = config.teamCount;
     this.bots = config.bots;
     this.insaneBots = config.insaneBots ?? false;
+    this.ellipsisBots = config.ellipsisBots ?? false;
     const isTeam = config.gameMode === GameMode.Team;
     this.infiniteGold = config.infiniteGold ?? false;
     this.donateGold = config.donateGold ?? isTeam;
@@ -1951,6 +1961,7 @@ export class HostLobbyModal extends BaseModal {
             difficulty: this.selectedDifficulty,
             bots: this.bots,
             insaneBots: this.insaneBots,
+            ellipsisBots: this.ellipsisBots,
             infiniteGold: this.infiniteGold,
             donateGold: this.donateGold,
             infiniteTroops: this.infiniteTroops,

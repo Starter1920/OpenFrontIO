@@ -133,6 +133,7 @@ const DEFAULT_OPTIONS = {
   selectedDifficulty: Difficulty.Easy,
   bots: 400,
   insaneBots: false,
+  ellipsisBots: false,
   infiniteGold: false,
   infiniteTroops: false,
   compactMap: false,
@@ -210,6 +211,7 @@ export class SinglePlayerModal extends BaseModal {
   @state() private defaultNationCount: number = 0;
   @state() private bots: number = DEFAULT_OPTIONS.bots;
   @state() private insaneBots: boolean = DEFAULT_OPTIONS.insaneBots;
+  @state() private ellipsisBots: boolean = DEFAULT_OPTIONS.ellipsisBots;
   @state() private infiniteGold: boolean = DEFAULT_OPTIONS.infiniteGold;
   @state() private infiniteTroops: boolean = DEFAULT_OPTIONS.infiniteTroops;
   @state() private compactMap: boolean = DEFAULT_OPTIONS.compactMap;
@@ -572,6 +574,7 @@ export class SinglePlayerModal extends BaseModal {
               difficulty: {
                 selected: this.selectedDifficulty,
                 disabled: this.nations === 0,
+                ellipsis: this.ellipsisBots,
               },
               gameMode: {
                 selected: this.gameMode,
@@ -684,6 +687,7 @@ export class SinglePlayerModal extends BaseModal {
       this.nations !== this.defaultNationCount ||
       this.bots !== DEFAULT_OPTIONS.bots ||
       this.insaneBots !== DEFAULT_OPTIONS.insaneBots ||
+      this.ellipsisBots !== DEFAULT_OPTIONS.ellipsisBots ||
       this.infiniteGold !== DEFAULT_OPTIONS.infiniteGold ||
       this.infiniteTroops !== DEFAULT_OPTIONS.infiniteTroops ||
       this.compactMap !== DEFAULT_OPTIONS.compactMap ||
@@ -812,6 +816,7 @@ export class SinglePlayerModal extends BaseModal {
     this.nations = 0;
     this.defaultNationCount = 0;
     this.insaneBots = DEFAULT_OPTIONS.insaneBots;
+    this.ellipsisBots = DEFAULT_OPTIONS.ellipsisBots;
     this.infiniteGold = DEFAULT_OPTIONS.infiniteGold;
     this.infiniteTroops = DEFAULT_OPTIONS.infiniteTroops;
     this.compactMap = DEFAULT_OPTIONS.compactMap;
@@ -860,6 +865,7 @@ export class SinglePlayerModal extends BaseModal {
       teamCount: this.teamCount,
       bots: this.bots,
       insaneBots: this.insaneBots,
+      ellipsisBots: this.ellipsisBots,
       nations: sliderToNationsConfig(this.nations, this.defaultNationCount),
       infiniteGold: this.infiniteGold,
       infiniteTroops: this.infiniteTroops,
@@ -891,6 +897,7 @@ export class SinglePlayerModal extends BaseModal {
     this.teamCount = config.teamCount;
     this.bots = config.bots;
     this.insaneBots = config.insaneBots ?? false;
+    this.ellipsisBots = config.ellipsisBots ?? false;
     this.infiniteGold = config.infiniteGold ?? false;
     this.infiniteTroops = config.infiniteTroops ?? false;
     this.instantBuild = config.instantBuild ?? false;
@@ -987,10 +994,20 @@ export class SinglePlayerModal extends BaseModal {
 
   private handleDifficultySelection(value: Difficulty) {
     this.selectedDifficulty = value;
+    // Picking a regular difficulty card clears the "..." mode.
+    this.ellipsisBots = false;
   }
 
   private handleConfigDifficultySelected = (e: Event) => {
-    const customEvent = e as CustomEvent<{ difficulty: Difficulty }>;
+    const customEvent = e as CustomEvent<{
+      difficulty: Difficulty;
+      ellipsis?: boolean;
+    }>;
+    if (customEvent.detail.ellipsis === true) {
+      this.selectedDifficulty = customEvent.detail.difficulty;
+      this.ellipsisBots = true;
+      return;
+    }
     this.handleDifficultySelection(customEvent.detail.difficulty);
   };
 
@@ -1355,6 +1372,7 @@ export class SinglePlayerModal extends BaseModal {
             maxTimerValue: finalMaxTimerValue,
             bots: this.bots,
             insaneBots: this.insaneBots,
+            ellipsisBots: this.ellipsisBots,
             infiniteGold: this.infiniteGold,
             donateGold: this.gameMode === GameMode.Team,
             donateTroops: this.gameMode === GameMode.Team,

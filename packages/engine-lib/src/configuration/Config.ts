@@ -345,8 +345,16 @@ export class Config {
     return this._gameConfig.insaneBots ?? false;
   }
 
-  /** Insane bots (x3 strength) boosts nations only, not tribes. */
+  ellipsisBots(): boolean {
+    return this._gameConfig.ellipsisBots ?? false;
+  }
+
+  /**
+   * "..." difficulty (x10) takes precedence over insane bots (x3).
+   * Boosts nations only, never tribes.
+   */
   nationStrengthMultiplier(): number {
+    if (this.ellipsisBots()) return 10;
     return this.insaneBots() ? 3 : 1;
   }
 
@@ -428,8 +436,11 @@ export class Config {
       }
     }
 
-    if (this.insaneBots() && player.type() === PlayerType.Nation) {
-      toAdd *= 3;
+    if (
+      (this.insaneBots() || this.ellipsisBots()) &&
+      player.type() === PlayerType.Nation
+    ) {
+      toAdd *= this.nationStrengthMultiplier();
     }
 
     return Math.min(player.troops() + toAdd, max) - player.troops();

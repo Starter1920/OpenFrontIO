@@ -29,6 +29,7 @@ export const LobbyPresetConfigSchema = z.object({
     .optional(),
   infiniteGold: z.boolean().optional(),
   insaneBots: z.boolean().optional(),
+  ellipsisBots: z.boolean().optional(),
   donateGold: z.boolean().optional(),
   infiniteTroops: z.boolean().optional(),
   donateTroops: z.boolean().optional(),

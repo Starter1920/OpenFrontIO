@@ -1,5 +1,9 @@
 import { TileRef } from "@openfront/engine-api/game/GameMap";
-import { Tick, UnitType } from "@openfront/engine-api/game/GameTypes";
+import {
+  PlayerType,
+  Tick,
+  UnitType,
+} from "@openfront/engine-api/game/GameTypes";
 import {
   zInt,
   zPlayerRef,
@@ -82,6 +86,17 @@ export class ConstructionExecution implements Execution {
         {},
       );
       const duration = info.constructionDuration ?? 0;
+      if (
+        duration > 0 &&
+        this.player.type() === PlayerType.Nation &&
+        this.mg.config().gameConfig().ellipsisBots === true
+      ) {
+        // The "..." difficulty: nations finish structures in a blink.
+        const blitz = Math.max(1, Math.floor(duration / 5));
+        this.structure.setUnderConstruction(true);
+        this.ticksUntilComplete = blitz;
+        return;
+      }
       if (duration > 0) {
         this.structure.setUnderConstruction(true);
         this.ticksUntilComplete = duration;

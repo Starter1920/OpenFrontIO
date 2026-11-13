@@ -676,6 +676,7 @@
   "difficulty": {
     "difficulty": "Сложность наций",
     "easy": "Легко",
+    "ellipsis": "...",
     "hard": "Сложно",
     "impossible": "Невозможно",
     "medium": "Средне"

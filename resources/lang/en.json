@@ -1133,6 +1133,7 @@
   "difficulty": {
     "difficulty": "Nation difficulty",
     "easy": "Easy",
+    "ellipsis": "...",
     "hard": "Hard",
     "impossible": "Impossible",
     "info": "{smarts}, {troops}",

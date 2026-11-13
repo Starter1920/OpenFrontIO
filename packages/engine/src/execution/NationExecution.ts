@@ -114,6 +114,9 @@ export class NationExecution implements Execution {
 
   private getAttackRate(): number {
     const { difficulty } = this.mg.config().gameConfig();
+    if (this.mg.config().gameConfig().ellipsisBots === true) {
+      return this.random.nextInt(5, 10); // "..." reacts almost instantly
+    }
     switch (difficulty) {
       case Difficulty.Easy:
         return this.random.nextInt(65, 100); // Slower reactions
