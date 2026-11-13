@@ -345,8 +345,8 @@ export class Config {
     return this._gameConfig.insaneBots ?? false;
   }
 
-  /** Insane bots (x3 strength) applies to AI players only. */
-  botStrengthMultiplier(): number {
+  /** Insane bots (x3 strength) boosts nations only, not tribes. */
+  nationStrengthMultiplier(): number {
     return this.insaneBots() ? 3 : 1;
   }
 
@@ -370,7 +370,7 @@ export class Config {
     }
 
     if (player.type() === PlayerType.Bot) {
-      return (maxTroops / 3) * this.botStrengthMultiplier();
+      return maxTroops / 3;
     }
 
     if (player.type() === PlayerType.Human) {
@@ -394,7 +394,7 @@ export class Config {
       default:
         assertNever(this._gameConfig.difficulty);
     }
-    return nationMultiplier * maxTroops * this.botStrengthMultiplier();
+    return nationMultiplier * maxTroops * this.nationStrengthMultiplier();
   }
 
   troopIncreaseRate(player: PlayerLike): number {
@@ -428,10 +428,7 @@ export class Config {
       }
     }
 
-    if (
-      this.insaneBots() &&
-      (player.type() === PlayerType.Bot || player.type() === PlayerType.Nation)
-    ) {
+    if (this.insaneBots() && player.type() === PlayerType.Nation) {
       toAdd *= 3;
     }
 

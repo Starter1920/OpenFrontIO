@@ -650,7 +650,7 @@ export class EngineConfig extends Config {
 
   startManpower(playerInfo: PlayerInfo): number {
     if (playerInfo.playerType === PlayerType.Bot) {
-      return 10_000 * this.botStrengthMultiplier();
+      return 10_000;
     }
     if (playerInfo.playerType === PlayerType.Nation) {
       let nationManpower: number;
@@ -670,7 +670,7 @@ export class EngineConfig extends Config {
         default:
           assertNever(this._gameConfig.difficulty);
       }
-      return nationManpower * this.botStrengthMultiplier();
+      return nationManpower * this.nationStrengthMultiplier();
     }
     // The onboarding tutorial's player starts about half full, where troops
     // grow fastest, so the first attacks take more land.
@@ -684,7 +684,7 @@ export class EngineConfig extends Config {
     if (player.type() === PlayerType.Bot) {
       baseRate = 50n;
     } else if (player.type() === PlayerType.Nation) {
-      baseRate = 100n * BigInt(this.botStrengthMultiplier());
+      baseRate = 100n * BigInt(this.nationStrengthMultiplier());
     } else {
       baseRate = 100n;
     }
