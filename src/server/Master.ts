@@ -40,22 +40,36 @@ const log = logger.child({ comp: "m" });
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use(express.json());
-
 // Route /wN/* to the worker listening on port 3001+N — the same thing nginx
 // does in production and vite's server.proxy does in dev. With this, the
 // master alone serves the whole built client on ONE port: the page, the
 // static assets, /api and the worker routes a joining client needs.
 const WORKER_PATH = /^\/w(\d+)(\/.*)?$/;
 
+// Unprefixed game-API calls (POST /api/create_game, lobby queueing) live on
+// the workers: the edge in production picks one for each such request. The
+// master itself only serves /api/health. Round-robin like nginx does.
+let nextApiWorker = 0;
+
+// NOTE: this must stay registered BEFORE express.json() below. The proxy
+// pipes the raw request stream to the worker; if the body parser consumes it
+// first, the worker receives an empty body against the original
+// Content-Length and hangs waiting for bytes that never arrive.
 app.use((req, res, next) => {
+  let port: number;
+  let target: string;
   const match = WORKER_PATH.exec(req.originalUrl ?? "");
-  if (match === null) {
+  if (match !== null) {
+    port = ServerEnv.workerPortByIndex(Number(match[1]));
+    target = req.originalUrl.replace(/^\/w\d+/, "") || "/";
+  } else if (/^\/api\/(?!health\b)/.test(req.originalUrl ?? "")) {
+    const count = ServerEnv.numWorkers();
+    port = ServerEnv.workerPortByIndex(nextApiWorker++ % count);
+    target = req.originalUrl;
+  } else {
     next();
     return;
   }
-  const port = ServerEnv.workerPortByIndex(Number(match[1]));
-  const target = req.originalUrl.replace(/^\/w\d+/, "") || "/";
   const upstream = http.request(
     {
       host: "127.0.0.1",
@@ -76,6 +90,8 @@ app.use((req, res, next) => {
   });
   req.pipe(upstream);
 });
+
+app.use(express.json());
 
 // Serve the shared app shell for the root document.
 app.use(async (req, res, next) => {
