@@ -33,11 +33,17 @@ http
       "Access-Control-Allow-Origin",
       req.headers.origin ?? clientOrigin,
     );
+    // auth/refresh and other account flows send cookies, so the browser
+    // requires this header or it blocks the response entirely.
+    res.setHeader("Access-Control-Allow-Credentials", "true");
     // The client-side replay's fetch (JoinLobbyModal) sends Content-Type,
     // so the browser asks first. Without this answer it blocks the fetch.
     if (req.method === "OPTIONS") {
-      res.setHeader("Access-Control-Allow-Methods", "GET");
-      res.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept");
+      res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+      res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Accept, Authorization",
+      );
       res.writeHead(204).end();
       return;
     }

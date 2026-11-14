@@ -42,6 +42,41 @@ const __dirname = path.dirname(__filename);
 
 app.use(express.json());
 
+// Route /wN/* to the worker listening on port 3001+N — the same thing nginx
+// does in production and vite's server.proxy does in dev. With this, the
+// master alone serves the whole built client on ONE port: the page, the
+// static assets, /api and the worker routes a joining client needs.
+const WORKER_PATH = /^\/w(\d+)(\/.*)?$/;
+
+app.use((req, res, next) => {
+  const match = WORKER_PATH.exec(req.originalUrl ?? "");
+  if (match === null) {
+    next();
+    return;
+  }
+  const port = ServerEnv.workerPortByIndex(Number(match[1]));
+  const target = req.originalUrl.replace(/^\/w\d+/, "") || "/";
+  const upstream = http.request(
+    {
+      host: "127.0.0.1",
+      port,
+      method: req.method,
+      path: target,
+      headers: { ...req.headers, host: `127.0.0.1:${port}` },
+    },
+    (up) => {
+      res.writeHead(up.statusCode ?? 502, up.headers);
+      up.pipe(res);
+    },
+  );
+  upstream.on("error", (err) => {
+    log.error(`Error proxying ${req.originalUrl} to worker port ${port}:`, err);
+    if (!res.headersSent) res.status(502).json({ error: "worker unreachable" });
+    else res.end();
+  });
+  req.pipe(upstream);
+});
+
 // Serve the shared app shell for the root document.
 app.use(async (req, res, next) => {
   if (req.path === "/") {
@@ -286,6 +321,55 @@ export async function startMaster() {
   const PORT = 3000;
   server.listen(PORT, () => {
     log.info(`Master HTTP server listening on port ${PORT}`);
+  });
+
+  // WebSocket upgrades for /wN/* follow the same route as the HTTP proxy
+  // above: a game client plays over ws://<this host>/wN/..., which nginx
+  // routes to the worker port in production and vite proxies in dev.
+  server.on("upgrade", (req, socket, head) => {
+    const url = req.url ?? "/";
+    const match = WORKER_PATH.exec(url);
+    if (match === null) {
+      socket.destroy();
+      return;
+    }
+    const port = ServerEnv.workerPortByIndex(Number(match[1]));
+    const target = url.replace(/^\/w\d+/, "") || "/";
+    const upstream = http.request({
+      host: "127.0.0.1",
+      port,
+      method: req.method,
+      path: target,
+      headers: { ...req.headers, host: `127.0.0.1:${port}` },
+    });
+    upstream.on("upgrade", (upRes, upSocket, upHead) => {
+      const lines = [
+        `HTTP/${upRes.httpVersion} ${upRes.statusCode} ${upRes.statusMessage}`,
+      ];
+      for (const [key, value] of Object.entries(upRes.headers)) {
+        if (Array.isArray(value)) {
+          for (const item of value) lines.push(`${key}: ${item}`);
+        } else if (value !== undefined) {
+          lines.push(`${key}: ${value}`);
+        }
+      }
+      socket.write(lines.join("\r\n") + "\r\n\r\n");
+      if (upHead.length > 0) socket.write(upHead);
+      upSocket.pipe(socket);
+      socket.pipe(upSocket);
+    });
+    upstream.on("response", (upRes) => {
+      // The worker answered without upgrading: nothing to speak here.
+      log.error(
+        `Worker port ${port} answered ${upRes.statusCode} instead of upgrading for ${url}`,
+      );
+      socket.destroy();
+    });
+    upstream.on("error", (err) => {
+      log.error(`Error upgrading ${url} to worker port ${port}:`, err);
+      socket.destroy();
+    });
+    upstream.end(head.length > 0 ? head : undefined);
   });
 
   // Register with the API and keep checking in (docs/MultiServer.md,
